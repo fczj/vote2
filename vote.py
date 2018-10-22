@@ -10,6 +10,11 @@ from config import proxys_info
 
 import random
 
+proxies = {
+  "http": None,
+  "https": None,
+}
+
 def get_phone_num():
     num1  = [3,4,5,8]
     num2 = [0,1,2,3,4,5,6,7,8,9]
@@ -18,6 +23,7 @@ def get_phone_num():
         sum_str += str(random.choice(num2))
 
     return "1"+str(random.choice(num1)) + sum_str
+
 
 def check_proxy(proxy):
     try:
@@ -30,7 +36,7 @@ def check_proxy(proxy):
         else:
             return False
     except Exception as e:
-        print("代理失效")
+        print("代理失效", e)
         return False
 
 class Vote(threading.Thread):
@@ -40,14 +46,13 @@ class Vote(threading.Thread):
             "http": "http://"+proxy
         }
         self.vote_number = 1066	#li
-        #self.vote_number = 1936	#jin
-        # self.vote_number = 517		#gao
         self.token_url = "http://gcw.ynradio.com/seyy.php/Home/Vote/showPoll/pid/{}"
         self.vote_token = None
         self.vote_channel = None
 
     def get_token(self):
-        channel_lst = [4,2,3,1]
+        print(self.proxy,"开始获取token")
+        channel_lst = [2,]
         for channel in channel_lst:
             token_url = self.token_url.format(channel)
             try:
@@ -65,8 +70,9 @@ class Vote(threading.Thread):
                 pass
             if not check_proxy(self.proxy):
                 break
+            time.sleep(0.8)
 
-    def vote_to_person(self,retry_times=2):
+    def vote_to_person(self):
         headers = {
             'Host': 'gcw.ynradio.com',
             'Proxy-Connection': 'keep-alive',
@@ -82,7 +88,6 @@ class Vote(threading.Thread):
         }
 
         data = {
-            #'pid': 1,
             'pid': 2,
             'candidates[]': self.vote_number,
             'token': self.vote_token,
@@ -90,7 +95,6 @@ class Vote(threading.Thread):
         }
 
         try:
-            # r = requests.post("http://gcw.ynradio.com/seyy.php/Home/Vote/votePost",
             r = requests.post("http://gcw.ynradio.com/seyy.php/home/vote/votePostPhone",
                               data=data,
                               headers=headers,
@@ -109,16 +113,16 @@ class Vote(threading.Thread):
 
     def run(self):
         time.sleep(random.random())
-        for i in range(1):
+        for i in range(5):
             # start_time = time.time()
             token = self.get_token()
-
             if token is None:
-                print("token获取失败")
+                print(self.proxy, "token获取失败")
                 return
             self.vote_token, self.vote_channel = token
             print("第{}轮".format(i),self.proxy)
-            vote_result = self.vote_to_person(retry_times=1)
+            vote_result = self.vote_to_person()
+            time.sleep(1)
             # if vote_result is None:
             #     return
             # elif "成功" not in vote_result:
@@ -145,20 +149,23 @@ def get_proxy_mg():
 
 if __name__ == "__main__":
     while True:
-        #proxys = get_proxy_mg()
-        proxys = ["183.230.179.164:8060"]
-        check_proxy({"http":"http://"+proxys[0]})
+        proxys = get_proxy_mg()
+        print(proxys)
+        for proxy in proxys:
+            check_proxy({"http":"http://"+proxy})
+        #proxys = ["115.223.237.1:9000"]
+        #check_proxy({"http":"http://"+proxys[0]})
         th_lst = []
         if proxys is None:
             print("代理失效")
             break
         for proxy in proxys:
             th_lst.append(Vote(proxy))
+            time.sleep(2)
         for th in th_lst:
             th.start()
             time.sleep(2)
+            #th.join()
         break
-        # time.sleep(10)
-        # break
 
 
