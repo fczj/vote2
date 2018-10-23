@@ -6,6 +6,7 @@ import time
 import random
 import requests
 from bs4 import BeautifulSoup
+from abu import  *
 
 proxy_queue = Queue(1)
 token_queue = Queue(1)
@@ -40,12 +41,15 @@ def vote_to_person(token_info):
                           headers=headers,
                           verify=False,
                           allow_redirects=False,
-                          proxies={"http": "http://"+token_info['proxy']},
+                          # proxies={"http": "http://"+token_info['proxy']},
+                          proxies = proxies,
+                          auth = auth,
                           timeout=150,
                           )
         print(r.text)
         return r.text
     except Exception as e:
+        print(e)
         pass
 
 
@@ -58,8 +62,10 @@ def get_token(proxy):
         try:
             token_url = "http://gcw.ynradio.com/seyy.php/home/Vote/showPollPage/pid/1/sid/0"
             a = requests.get(token_url,
-                             proxies={"http": "http://"+proxy},
+                             # proxies={"http": "http://"+proxy},
+                             proxies = proxies,
                              timeout=20,
+                             auth = auth,
                              )
             if a.status_code != 200:
                 continue
@@ -152,7 +158,8 @@ class Vote(threading.Thread):
 
 
 
-def test(proxy):
+def test():
+    proxy = "A"
     token, channel = get_token(proxy)
     print(token, channel)
 
@@ -173,13 +180,13 @@ def start():
 
 
 if __name__ == "__main__":
-
-    start()
-    while True:
-        token_info = token_queue.get()
-        t = Vote(token_info)
-        t.start()
-        # t.join()
+    test()
+    # start()
+    # while True:
+    #     token_info = token_queue.get()
+    #     t = Vote(token_info)
+    #     t.start()
+    #     # t.join()
     #
     # proxys = get_proxy_mg(proxys_info[1])
     # for proxy in proxys:
