@@ -9,7 +9,7 @@ import time
 import requests
 
 
-def retry_func_when_retrun_is_none(retry_times=1, sleep_time=0):
+def retry_func_when_retrun_is_none(retry_times=1, sleep_time=15):
     def decorator(func):
         def wrapper(*args, **kwargs):
             local_times = retry_times
@@ -27,7 +27,7 @@ def check_proxy(proxy):
     try:
         a = requests.get("https://www.baidu.com",
                          timeout=0.2,
-                         proxies=proxy,
+                         proxies={'proxy':'http://'+proxy},
                          )
         if a.status_code == 200:
             return True
@@ -38,12 +38,13 @@ def check_proxy(proxy):
         return False
 
 
-@retry_func_when_retrun_is_none(retry_times=10, sleep_time=15)
+@retry_func_when_retrun_is_none(retry_times=10, sleep_time=100)
 def get_proxy_mg(get_proxy_url):
     # proxy_num = int(sys.argv[1])
     # proxy_get_url = proxys_info[proxy_num]
     try:
         r = requests.get(get_proxy_url)
+        print(r.text)
         r_json = r.json()
         if "RESULT" in r_json:
             result = r.json()['RESULT']

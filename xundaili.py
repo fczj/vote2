@@ -34,14 +34,15 @@ class Vote(threading.Thread):
         self.vote_channel = None
 
     def get_token(self):
+        time.sleep(random.randint(1,12))
         print(self.proxy, "开始获取token")
-        channel_lst = [2, 4, 3, 1]
+        channel_lst = [2,]
         for channel in channel_lst:
             token_url = self.token_url.format(channel)
             try:
                 a = requests.get(token_url,
                                  proxies=self.proxy,
-                                 timeout=15,
+                                 timeout=20,
                                  )
                 if a.status_code != 200:
                     continue
@@ -55,6 +56,7 @@ class Vote(threading.Thread):
             time.sleep(0.8)
 
     def vote_to_person(self):
+        time.sleep(random.randint(2,5))
         headers = {
             'Host': 'gcw.ynradio.com',
             'Proxy-Connection': 'keep-alive',
@@ -83,7 +85,7 @@ class Vote(threading.Thread):
                               verify=False,
                               allow_redirects=False,
                               proxies=self.proxy,
-                              timeout=60,
+                              timeout=150,
                               )
             print("=" * 20, r.text)
             return r.text
@@ -92,7 +94,7 @@ class Vote(threading.Thread):
             pass
 
     def run(self):
-        for i in range(5):
+        for i in range(1):
             start_time = time.time()
             token = self.get_token()
             if token is None:
@@ -102,12 +104,14 @@ class Vote(threading.Thread):
             print("第{}轮".format(i), self.proxy)
             vote_result = self.vote_to_person()
             run_time = time.time() - start_time
+            sleep_time = random.randint(4,12)
+            time.sleep(sleep_time)
 
 
 if __name__ == "__main__":
     while True:
-        # proxys = get_proxy_mg(proxys_info[sys.argv[1]])
-        proxys = get_proxy_mg(proxys_info[0])
+        proxys = get_proxy_mg(proxys_info[int(sys.argv[1])])
+        #proxys = get_proxy_mg(proxys_info[0])
         if proxys is None:
             print("代理失效")
             break
@@ -118,10 +122,11 @@ if __name__ == "__main__":
                 proxys.remove(proxy)
             else:
                 th_list.append(Vote(proxy))
-                time.sleep(5)
         for t in th_list:
             t.start()
-            time.sleep(10)
-            t.join()
+            time.sleep(2)
+        #for t in th_list:
+        #    t.join()
+        time.sleep(30)
 
 

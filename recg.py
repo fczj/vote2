@@ -41,5 +41,4 @@ def recognize_digit(seg_img):
     return num
 
 
-a = recognize("./code.jpg")
-print(a)
+
