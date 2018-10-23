@@ -7,8 +7,8 @@ import random
 import requests
 from bs4 import BeautifulSoup
 
-proxy_queue = Queue(3)
-token_queue = Queue(3)
+proxy_queue = Queue(1)
+token_queue = Queue(1)
 
 
 def vote_to_person(token_info):
@@ -43,6 +43,7 @@ def vote_to_person(token_info):
                           proxies={"http": "http://"+token_info['proxy']},
                           timeout=150,
                           )
+        print(r.text)
         return r.text
     except Exception as e:
         pass
@@ -55,9 +56,10 @@ def get_token(proxy):
     for channel in channel_lst:
         token_url = token_url.format(channel)
         try:
+            token_url = "http://gcw.ynradio.com/seyy.php/home/Vote/showPollPage/pid/1/sid/0"
             a = requests.get(token_url,
                              proxies={"http": "http://"+proxy},
-                             timeout=10,
+                             timeout=20,
                              )
             if a.status_code != 200:
                 continue
@@ -121,7 +123,7 @@ class TokenGenerate(threading.Thread):
                 token, channel = get_token(proxy['proxy'])
             except Exception as e:
                 continue
-            print("="*100)
+            print()
             token_info = {
                 'proxy': proxy['proxy'],
                 'token': token,
@@ -141,8 +143,8 @@ class Vote(threading.Thread):
         vote_result = vote_to_person(self.token_info)
         if vote_result is not None:
             proxy_info_with_time = {
-                'proxy': token_info['proxy'],
-                'times': token_info['times'],
+                'proxy': self.token_info['proxy'],
+                'times': self.token_info['times'],
             }
             if "成功" not in vote_result:
                 proxy_info_with_time['times'] = 5
@@ -150,21 +152,18 @@ class Vote(threading.Thread):
 
 
 
-def test():
-    pass
-    # proxys = get_proxy_mg(proxys_info[4])
-    # proxy = proxys[0]
-    # token, channel = get_token(proxy)
-    # print(token, channel)
-    #
-    # token_info = {
-    #     'proxy': proxy,
-    #     'token': token,
-    #     'channel': channel,
-    #     'phone': get_phone_num(),
-    #     # 'code_math': get_code_math(proxy)
-    # }
-    # vote_to_person(token_info)
+def test(proxy):
+    token, channel = get_token(proxy)
+    print(token, channel)
+
+    token_info = {
+        'proxy': proxy,
+        'token': token,
+        'channel': channel,
+        'phone': get_phone_num(),
+        # 'code_math': get_code_math(proxy)
+    }
+    vote_to_person(token_info)
 
 def start():
     a = ProxyGenerate(0)
@@ -174,8 +173,14 @@ def start():
 
 
 if __name__ == "__main__":
+
     start()
     while True:
         token_info = token_queue.get()
         t = Vote(token_info)
         t.start()
+        # t.join()
+    #
+    # proxys = get_proxy_mg(proxys_info[1])
+    # for proxy in proxys:
+    #     test(proxy)
