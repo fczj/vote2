@@ -2,6 +2,7 @@ import random
 import requests
 from bs4 import BeautifulSoup
 from abu import proxies, auth
+import time
 
 
 def swith_ip():
@@ -39,7 +40,7 @@ def vote_to_person(token_info):
                           allow_redirects=False,
                           proxies=proxies,
                           auth=auth,
-                          timeout=120,
+                          timeout=60,
                           )
         print(r.text)
         return r.text
@@ -77,7 +78,10 @@ def get_phone_num():
 
 
 def test():
+    time_sum = 0
+    success_count = 0
     while True:
+        start_time = time.time()
         token, channel = get_token()
         if not token:
             swith_ip()
@@ -91,6 +95,13 @@ def test():
         vote_result = vote_to_person(token_info)
         if "成功" not in vote_result:
             swith_ip()
+        else:
+            use_time = time.time() - start_time
+            success_count += 1
+            time_sum += use_time
+            print("本轮投票耗时:{}".format(use_time))
+            print("总票数:{},总时间:{}".format(success_count, time_sum))
+            print("总时间/票数 = {}".format(float(time_sum)/success_count))
 
 if __name__ == "__main__":
     test()

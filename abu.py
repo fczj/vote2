@@ -6,8 +6,8 @@ proxyHost = "proxy.abuyun.com"
 proxyPort = "9010"
 
 # 代理隧道验证信息
-proxyUser = "H20Y0IHNGLT61C2P"
-proxyPass = "4D6AA0C617EA0604"
+proxyUser = "H3K79264I511UFVP"
+proxyPass = "E7CBE2F26B8F38DA"
 
 proxies = {
             "http": proxyHost + ":" + proxyPort
